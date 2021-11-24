@@ -1,0 +1,201 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Bitcore</title><link href="epub.css" rel="stylesheet" type="text/css"/>
+<meta content="urn:uuid:2a6de4af-a2a1-4483-8fda-5d86482f548a" name="Adept.expected.resource"/></head><body data-type="book"><section data-pdf-bookmark="Appendix E. Bitcore" data-type="appendix" epub:type="appendix"><div class="appendix" id="appdx_bitcore">
+<h1><span class="label">Appendix E. </span>Bitcore</h1>
+
+
+<p><a data-primary="Bitcore" data-type="indexterm" id="bitcore17"/>Bitcore is a suite of tools provided by BitPay. Its goal is to provide easy-to-use tools for Bitcoin developers. Almost all of Bitcore’s code is written in JavaScript. There are some modules written specifically for NodeJS. Finally, the “node” module of Bitcore includes Bitcoin Core’s C++ code. Please see <a href="https://bitcore.io"><em class="hyperlink">https://bitcore.io</em></a> for more information.</p>
+
+
+
+
+
+
+<section data-pdf-bookmark="Bitcore’s Feature List" data-type="sect1"><div class="sect1" id="idm140310524974768">
+<h1>Bitcore’s Feature List</h1>
+
+<ul>
+<li>
+<p>Bitcoin full node (bitcore-node)</p>
+</li>
+<li>
+<p>Block explorer (insight)</p>
+</li>
+<li>
+<p>Block, transaction, and wallet utilities (bitcore-lib)</p>
+</li>
+<li>
+<p>Communicating directly with Bitcoin’s P2P network (bitcore-p2p)</p>
+</li>
+<li>
+<p>Seed entropy mnemonic generation (bitcore-mnemonic)</p>
+</li>
+<li>
+<p>Payment protocol (bitcore-payment-protocol)</p>
+</li>
+<li>
+<p>Message verification and signing (bitcore-message)</p>
+</li>
+<li>
+<p>Elliptic curve Integrated Encryption Scheme (bitcore-ecies)</p>
+</li>
+<li>
+<p>Wallet service (bitcore-wallet-service)</p>
+</li>
+<li>
+<p>Wallet client (bitcore-wallet-client)</p>
+</li>
+<li>
+<p>Playground (bitcore-playground)</p>
+</li>
+<li>
+<p>Integrating services directly with Bitcoin Core (bitcore-node)</p>
+</li>
+</ul>
+</div></section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<section data-pdf-bookmark="Bitcore Library Examples" data-type="sect1"><div class="sect1" id="idm140310524962272">
+<h1>Bitcore Library Examples</h1>
+
+
+
+
+
+
+
+
+<section data-pdf-bookmark="Prerequisities" data-type="sect2"><div class="sect2" id="idm140310524961248">
+<h2>Prerequisities</h2>
+
+<ul>
+<li>
+<p>NodeJS &gt;= 4.x or use our <a href="https://bitcore.io/playground">hosted online playground</a></p>
+</li>
+</ul>
+
+<p>If using NodeJS and the node REPL:</p>
+
+<pre data-code-language="bash" data-type="programlisting"><code class="nv">$ </code>npm install -g bitcore-lib bitcore-p2p
+<code class="nv">$ NODE_PATH</code><code class="o">=</code><code class="k">$(</code>npm list -g <code class="p">|</code> head -1<code class="k">)</code>/node_modules node</pre>
+</div></section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<section data-pdf-bookmark="Wallet Examples using bitcore-lib" data-type="sect2"><div class="sect2" id="idm140310524954976">
+<h2>Wallet Examples using bitcore-lib</h2>
+
+<p>Creating a new bitcoin address with associated private key:</p>
+
+<pre data-type="programlisting">&gt; bitcore = require('bitcore-lib')
+&gt; privateKey = new bitcore.PrivateKey()
+&gt; address = privateKey.toAddress().toString()</pre>
+
+<p>Creating a hierarchical deterministic private key and address:</p>
+
+<pre data-type="programlisting">&gt; hdPrivateKey = bitcore.HDPrivateKey()
+&gt; hdPublicKey = bitcore.HDPublicKey(hdPrivateKey)
+&gt; hdAddress = new bitcore.Address(hdPublicKey.publicKey).toString()</pre>
+
+<p>Creating and signing a transaction from a UTXO:</p>
+
+<pre data-type="programlisting">&gt; utxo = {
+  txId: transaction id containing an unspent output,
+  outputIndex: output indexi e.g. 0,
+  address: addressOfUtxo,
+  script: bitcore.Script.buildPublicKeyHashOut(addressOfUtxo).toString(),
+  satoshis: amount sent to the address
+}
+&gt; fee = 3000 //set appropriately for conditions on the network
+&gt; tx = new bitcore.Transaction()
+        .from(utxo)
+        .to(address, 35000)
+        .fee(fee)
+        .enableRBF()
+        .sign(privateKeyOfUtxo)</pre>
+
+<p>Replace the last transaction in the mempool (replace-by-fee):</p>
+
+<pre data-type="programlisting">&gt; rbfTx = new Transaction()
+           .from(utxo)
+           .to(address, 35000)
+           .fee(fee*2)
+           .enableRBF()
+           .sign(privateKeyOfUtxo);
+&gt; tx.serialize();
+&gt; rbfTx.serialize();</pre>
+
+<p>Broadcasting a transaction to the Bitcoin network
+(note: broadcast valid transactions only; refer to <a href="https://bitnodes.21.co/nodes"><em class="hyperlink">https://bitnodes.21.co/nodes</em></a> for peer hosts):</p>
+<ol>
+<li>
+<p>Copy the code below into a file called <em>broadcast.js</em>.</p>
+</li>
+<li>
+<p>The <code>tx</code> and <code>rbfTx</code> variables are the output of <code>tx.serialize()</code> and <code>rbfTx.serialize()</code>, respectively.</p>
+</li>
+<li>
+<p>In order to replace-by-fee, the peer must support bitcoind option <code>mempoolreplace</code> and have it set to <code>1</code>.</p>
+</li>
+<li>
+<p>Run the file node <em>broadcast.js</em><a data-primary="" data-startref="bitcore17" data-type="indexterm" id="idm140310524935696"/>:</p>
+</li>
+
+</ol>
+
+<pre data-type="programlisting">var p2p = require('bitcore-p2p');
+var bitcore = require('bitcore-lib');
+var tx = new bitcore.Transaction('output from serialize function');
+var rbfTx = new bitcore.Transaction('output from serialize function');
+var host = 'ip address'; //use valid peer listening on tcp 8333
+var peer = new p2p.Peer({host: host});
+var messages = new p2p.Messages();
+peer.on('ready', function() {
+  var txs = [messages.Transaction(tx), messages.Transaction(rbfTx)];
+  var index = 0;
+  var interval = setInterval(function() {
+    peer.sendMessage(txs[index++]);
+    console.log('tx: ' + index + ' sent');
+    if (index === txs.length) {
+      clearInterval(interval);
+      console.log('disconnecting from peer: ' + host);
+      peer.disconnect();
+    }
+  }, 2000);
+});
+peer.connect();</pre>
+</div></section>
+
+
+
+
+
+</div></section>
+
+
+
+
+
+
+
+</div></section></body></html>
